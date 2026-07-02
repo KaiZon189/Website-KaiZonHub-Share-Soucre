@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KaiZon Share Source</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --panel:rgba(255,255,255,0.05);
+  --panel-border:rgba(255,255,255,0.1);
+  --text:#ffffff;
+  --muted:#9a9a9a;
+  --red:#ff2b2b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  height:100%;
+  width:100%;
+  overflow:hidden;
+  background:#000;
+  font-family:'Poppins',sans-serif;
+  color:var(--text);
+  overscroll-behavior:none;
+}
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.phone{
+  width:100%;
+  max-width:430px;
+  height:100vh;
+  max-height:932px;
+  background:radial-gradient(circle at 50% 0%, #1a0505 0%, #000 60%);
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border-left:1px solid #1a1a1a;
+  border-right:1px solid #1a1a1a;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  background:rgba(10,10,10,0.7);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--panel-border);
+  z-index:10;
+  flex-shrink:0;
+}
+.brand{
+  font-weight:800;font-size:18px;letter-spacing:-0.3px;
+  background:linear-gradient(100deg,#fff 0%, var(--red) 35%, #3a0505 55%, var(--red) 75%, #fff 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 4.5s linear infinite;
+  user-select:none;
+  cursor:pointer;
+  transition:transform 120ms ease;
+}
+.brand:active{transform:scale(0.95);}
+@keyframes shimmer{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+
+.header-btns{display:flex;gap:8px;}
+.icon-btn{
+  width:38px;height:38px;border-radius:12px;
+  border:1px solid var(--panel-border);
+  background:var(--panel);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:background 120ms ease, transform 120ms ease;
+}
+.icon-btn:active{transform:scale(0.92);}
+
+.menu-btn span{display:block;width:16px;height:2px;background:#fff;margin:2px 0;border-radius:2px;transition:transform 180ms ease, opacity 180ms ease;}
+.menu-btn.open span:nth-child(1){transform:translateY(4px) rotate(45deg);}
+.menu-btn.open span:nth-child(2){opacity:0;}
+.menu-btn.open span:nth-child(3){transform:translateY(-4px) rotate(-45deg);}
+
+.dropdown{
+  position:absolute;top:64px;right:16px;width:200px;
+  background:rgba(16,16,16,0.9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--panel-border);border-radius:16px;padding:8px;
+  z-index:20;
+  opacity:0;visibility:hidden;transform:translateY(-8px) scale(0.97);
+  transition:opacity 160ms ease, transform 160ms ease, visibility 160ms;
+}
+.dropdown.show{opacity:1;visibility:visible;transform:translateY(0) scale(1);}
+.dropdown a{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:600;
+  transition:background 120ms ease;
+}
+.dropdown a:hover{background:rgba(255,255,255,0.06);}
+.dropdown svg{width:20px;height:20px;flex-shrink:0;}
+
+main{
+  flex:1;overflow:hidden;padding:28px 20px;display:flex;flex-direction:column;min-height:0;
+}
+.hero{text-align:center;margin-bottom:24px;animation:fadeUp 500ms ease both;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.hero h1{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-0.3px;}
+.hero p{color:var(--muted);font-size:13px;}
+
+.tabs{
+  display:flex;background:var(--panel);border:1px solid var(--panel-border);
+  border-radius:14px;padding:4px;position:relative;margin-bottom:20px;flex-shrink:0;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-indicator{
+  position:absolute;top:4px;bottom:4px;
+  background:linear-gradient(120deg,var(--red),#7a0d0d);
+  border-radius:10px;
+  transition:left 260ms cubic-bezier(.4,0,.2,1), width 260ms cubic-bezier(.4,0,.2,1);
+  box-shadow:0 4px 14px rgba(255,43,43,0.35);
+}
+.tab-btn{
+  flex:0 0 auto;position:relative;z-index:2;padding:10px 14px;text-align:center;
+  font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;
+  border-radius:10px;transition:color 200ms ease;
+  white-space:nowrap;
+}
+.tab-btn.active{color:#fff;}
+
+.panels{position:relative;flex:1;min-height:0;}
+.panel{
+  position:absolute;inset:0;
+  opacity:0;visibility:hidden;transform:translateY(8px) scale(0.98);
+  transition:opacity 220ms ease, transform 220ms ease, visibility 220ms;
+  display:flex;flex-direction:column;
+}
+.panel.active{opacity:1;visibility:visible;transform:translateY(0) scale(1);}
+
+.card{
+  background:var(--panel);border:1px solid var(--panel-border);border-radius:18px;
+  padding:20px;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;
+  text-align:center;
+}
+.card h2{font-size:18px;font-weight:800;}
+.card p{color:var(--muted);font-size:12.5px;line-height:1.5;}
+.get-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:13px 26px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(120deg,var(--red),#7a0d0d);
+  color:#fff;font-weight:700;font-size:14px;
+  transition:transform 120ms ease, box-shadow 120ms ease, background 200ms ease;
+  box-shadow:0 6px 20px rgba(255,43,43,0.3);
+}
+.get-btn:active{transform:scale(0.94);}
+.get-btn:disabled{
+  background:rgba(255,255,255,0.08);color:var(--muted);box-shadow:none;cursor:not-allowed;
+}
+
+footer{text-align:center;padding:14px;font-size:11px;color:var(--muted);border-top:1px solid var(--panel-border);flex-shrink:0;}
+
+[lang-vi]{display:none;}
+body.vi [lang-en]{display:none;}
+body.vi [lang-vi]{display:inline;}
+</style>
+</head>
+<body>
+<div class="phone">
+<header>
+<div class="brand" id="brandReset" title="Reset">KaiZon Share Source</div>
+<div class="header-btns">
+<button class="icon-btn" id="translateBtn" title="Translate">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M5 8h9M8 5v3m6 12l4-9 4 9m-7-2h6M2 15c3-1 6-3 7-8"/></svg>
+</button>
+<button class="icon-btn menu-btn" id="menuBtn">
+<span></span><span></span><span></span>
+</button>
+</div>
+</header>
+
+<div class="dropdown" id="dropdown">
+<a href="https://tiktok.com/@usertd1609" target="_blank" rel="noopener">
+<svg viewBox="0 0 24 24" fill="#fff"><path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/></svg>
+TikTok
+</a>
+<a href="https://discord.gg/GqXCVwkn7" target="_blank" rel="noopener">
+<svg viewBox="0 0 24 24" fill="#5865F2"><path d="M20.3 5.4A18 18 0 0015.6 4l-.3.6a13 13 0 014 1.6 15 15 0 00-14.6 0 13 13 0 014-1.6L8.4 4A18 18 0 003.7 5.4C1.2 9.1.5 12.7.8 16.3a18 18 0 005.4 2.7l.9-1.4a11 11 0 01-1.7-.8l.4-.3a13 13 0 0012.4 0l.4.3c-.5.3-1.1.6-1.7.8l.9 1.4a18 18 0 005.4-2.7c.4-4.2-.7-7.8-2.9-10.9zM8.9 14.3c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7zm6.2 0c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7z"/></svg>
+Discord
+</a>
+</div>
+
+<main>
+<div class="hero">
+<h1>KaiZon Share Source</h1>
+<p>The Strongest Battleground</p>
+</div>
+
+<div class="tabs" id="tabs">
+<div class="tab-indicator" id="tabIndicator"></div>
+<div class="tab-btn active" data-tab="0">Supa Legit</div>
+<div class="tab-btn" data-tab="1">Lix Tech</div>
+<div class="tab-btn" data-tab="2">Kyoto</div>
+<div class="tab-btn" data-tab="3">Oreo Tech</div>
+<div class="tab-btn" data-tab="4">Mereb Zip</div>
+<div class="tab-btn" data-tab="5">KibaZ</div>
+<div class="tab-btn" data-tab="6">Freeze Tech</div>
+<div class="tab-btn" data-tab="7">Auto Tech V1</div>
+<div class="tab-btn" data-tab="8">Omine Tech</div>
+<div class="tab-btn" data-tab="9">LoopDash</div>
+<div class="tab-btn" data-tab="10">Coming Soon</div>
+</div>
+
+<div class="panels">
+<div class="panel active" data-panel="0">
+<div class="card">
+<h2>Supa Legit <span style="color:var(--muted);font-weight:500;font-size:12px;">By ThanhDuy</span></h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/qafcst60y5yj2du/SupaLegitFree_minified.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="1">
+<div class="card">
+<h2>Lix Tech</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/cxz3q3nlh3xy1cv/Lix+Tech.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="2">
+<div class="card">
+<h2>Kyoto</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/65wd8gfgw41h5gi/Kyoto+Tech+Rework.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="3">
+<div class="card">
+<h2>Oreo Tech</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/hk4kay9m0qre5ov/Oreo_Tech_%2528deobfuscator%2529.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="4">
+<div class="card">
+<h2>Full Source Mereb <span style="color:var(--muted);font-weight:500;font-size:12px;">(Zip)</span></h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/2orqkggzg5cn0h8/Merebennie_Old_By_Tthanh.zip/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="5">
+<div class="card">
+<h2>KibaZ</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/1xt221rluwtvcvi/KibaZ.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="6">
+<div class="card">
+<h2>Freeze Tech</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/5c9bsgufkd642x7/Freeze-Tech.lua.txt/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="7">
+<div class="card">
+<h2>Auto Tech V1 <span style="color:var(--muted);font-weight:500;font-size:12px;">By ThanhDuy</span></h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/7dmrhg6kdc6wi93/AutoTech_%25281%2529.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="8">
+<div class="card">
+<h2>Omine Tech</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/s50f5i8wldm54bm/Omine+Tech+Real.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="9">
+<div class="card">
+<h2>LoopDash</h2>
+<p><span lang-en>Tap the button below to open the download page.</span><span lang-vi>Nhấn nút bên dưới để mở trang tải về.</span></p>
+<button class="get-btn" data-url="https://www.mediafire.com/file/yna6yvfffp7vc7e/loopDash.lua/file">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+<span lang-en>Get Script</span><span lang-vi>Lấy Script</span>
+</button>
+</div>
+</div>
+
+<div class="panel" data-panel="10">
+<div class="card">
+<h2><span lang-en>Coming Soon</span><span lang-vi>Sắp Ra Mắt</span></h2>
+<p><span lang-en>This source is not available yet. Stay tuned!</span><span lang-vi>Nguồn này chưa khả dụng. Hãy chờ nhé!</span></p>
+<button class="get-btn" disabled>
+<span lang-en>Coming Soon</span><span lang-vi>Sắp Ra Mắt</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+
+<footer><span lang-en>© KaiZon — Made for the community</span><span lang-vi>© KaiZon — Được tạo cho cộng đồng</span></footer>
+</div>
+
+<script>
+const brandReset=document.getElementById('brandReset');
+brandReset.addEventListener('click',()=>{
+  window.location.reload();
+});
+
+const menuBtn=document.getElementById('menuBtn');
+const dropdown=document.getElementById('dropdown');
+menuBtn.addEventListener('click',()=>{
+  menuBtn.classList.toggle('open');
+  dropdown.classList.toggle('show');
+});
+document.addEventListener('click',(e)=>{
+  if(!menuBtn.contains(e.target) && !dropdown.contains(e.target)){
+    menuBtn.classList.remove('open');
+    dropdown.classList.remove('show');
+  }
+});
+
+const translateBtn=document.getElementById('translateBtn');
+translateBtn.addEventListener('click',()=>{
+  document.body.classList.toggle('vi');
+});
+
+const tabs=document.querySelectorAll('.tab-btn');
+const panels=document.querySelectorAll('.panel');
+const indicator=document.getElementById('tabIndicator');
+
+function moveIndicator(el){
+  indicator.style.left = el.offsetLeft + 'px';
+  indicator.style.width = el.offsetWidth + 'px';
+}
+
+function activateTab(idx){
+  tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab==idx));
+  panels.forEach(p=>p.classList.toggle('active', p.dataset.panel==idx));
+  moveIndicator(tabs[idx]);
+  tabs[idx].scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+}
+
+tabs.forEach(tab=>{
+  tab.addEventListener('click',()=>activateTab(tab.dataset.tab));
+});
+
+window.addEventListener('load',()=>moveIndicator(tabs[0]));
+window.addEventListener('resize',()=>{
+  const active=document.querySelector('.tab-btn.active');
+  moveIndicator(active);
+});
+
+document.querySelectorAll('.get-btn[data-url]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    window.open(btn.dataset.url, '_blank', 'noopener');
+  });
+});
+</script>
+</body>
+</html>
